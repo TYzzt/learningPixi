@@ -15,21 +15,28 @@ var Container = PIXI.Container,
 //Create a Pixi stage and renderer and add the 
 //renderer.view to the DOM
 var stage = new Container(),
-    renderer = autoDetectRenderer(256, 256);
+    renderer = autoDetectRenderer(900, 800);
 document.body.appendChild(renderer.view);
 
 loader
   .add("images/cat.png")
+  .add("images/beijing.png")
+  .add("images/feiji.png")
   .load(setup);
 
 //Define any variables that are used in more than one function
-var cat, state;
+var cat, state,beijing;
 
 function setup() {
 
+
+  beijing = new Sprite(resources["images/beijing.png"].texture);
   //Create the `cat` sprite 
+  stage.addChild(beijing);
+
   cat = new Sprite(resources["images/cat.png"].texture);
-  cat.y = 96; 
+  cat.x = 200; 
+  cat.y = 700; 
   cat.vx = 0;
   cat.vy = 0;
   stage.addChild(cat);
@@ -38,7 +45,12 @@ function setup() {
   var left = keyboard(37),
       up = keyboard(38),
       right = keyboard(39),
-      down = keyboard(40);
+      down = keyboard(40),
+      kongge = keyboard(32);
+
+   kongge.press =function(){
+     
+   }  
 
   //Left arrow key `press` method
   left.press = function() {
@@ -125,7 +137,7 @@ function keyboard(keyCode) {
   key.release = undefined;
   //The `downHandler`
   key.downHandler = function(event) {
-    console.log(event.keyCode)
+   
     if (event.keyCode === key.code) {
       if (key.isUp && key.press) key.press();
       key.isDown = true;

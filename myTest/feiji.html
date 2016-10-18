@@ -1,0 +1,325 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Keyboard movment</title>
+<body>
+<script src="pixi.js"></script>
+<script>
+
+//Aliases
+var Container = PIXI.Container,
+    autoDetectRenderer = PIXI.autoDetectRenderer,
+    loader = PIXI.loader,
+    resources = PIXI.loader.resources,
+    Sprite = PIXI.Sprite;
+
+//Create a Pixi stage and renderer and add the 
+//renderer.view to the DOM
+var stage = new Container(),
+    renderer = autoDetectRenderer(900, 800);
+document.body.appendChild(renderer.view);
+
+loader
+  .add("images/cat.png")
+  .add("images/beijing.png")
+  .add("images/feiji.png")
+  .add("images/blob.png")
+  .load(setup);
+
+//Define any variables that are used in more than one function
+var cat, state,beijing,zidan;
+var zidans=[];
+var blobs=[];
+function setup() {
+
+
+  beijing = new Sprite(resources["images/beijing.png"].texture);
+  //Create the `cat` sprite 
+  stage.addChild(beijing);
+
+  cat = new Sprite(resources["images/cat.png"].texture);
+  cat.x = 200; 
+  cat.y = 700; 
+  cat.vx = 0;
+  cat.vy = 0;
+  stage.addChild(cat);
+
+ /* zidan = new Sprite(resources["images/feiji.png"].texture);
+  zidan.x = cat.x+cat.width/2; 
+  zidan.y = 700 - zidan.height; 
+  zidan.vx = 0;
+  zidan.vy = 1;
+  stage.addChild(zidan);*/
+
+
+  //Capture the keyboard arrow keys
+  var left = keyboard(37),
+      up = keyboard(38),
+      right = keyboard(39),
+      down = keyboard(40),
+      kongge = keyboard(32);
+
+ 
+
+   kongge.press =function(){
+    let zidan = new Sprite(resources["images/feiji.png"].texture);
+    zidan.x = cat.x+cat.width/2; 
+    zidan.y = cat.y - zidan.height; 
+    zidan.vx = 0;
+    zidan.vy = -5;
+    stage.addChild(zidan);
+    zidans.push(zidan);
+   
+   }  
+
+  //Left arrow key `press` method
+  left.press = function() {
+    //Change the cat's velocity when the key is pressed
+    cat.vx = -5;
+    /*cat.vy = 0;*/
+  };
+  //Left arrow key `release` method
+  left.release = function() {
+    //If the left arrow has been released, and the right arrow isn't down,
+    //and the cat isn't moving vertically:
+    //Stop the cat
+    if (!right.isDown ) {
+      cat.vx = 0;
+    }
+  };
+
+  //Up
+  up.press = function() {
+    cat.vy = -5;
+    /*cat.vx = 0;*/
+  };
+  up.release = function() {
+    if (!down.isDown ) {
+      cat.vy = 0;
+    }
+  };
+
+  //Right
+  right.press = function() {
+    cat.vx = 5;
+    
+  };
+  right.release = function() {
+    if (!left.isDown ) {
+      cat.vx = 0;
+    }
+  };
+
+  //Down
+  down.press = function() {
+    cat.vy = 5;
+    
+  };
+  down.release = function() {
+    if (!up.isDown ) {
+      cat.vy = 0;
+    }
+  };
+
+  //Set the game state
+  state = play;
+ 
+  showBlob()
+  //Start the game loop
+  gameLoop();
+}
+
+
+function showBlob(){
+    let i = 3-blobs.length;
+    for(var j=0;j<i;j++){
+      let blob = new Sprite(resources["images/blob.png"].texture);
+
+      blob.x = randomInt(100,700);
+      blob.y = randomInt(100,200);
+
+      blobs.push(blob)
+      stage.addChild(blob);
+
+    }
+    requestAnimationFrame(showBlob);
+}
+
+function gameLoop(){
+
+  //Loop this function 60 times per second
+  requestAnimationFrame(gameLoop);
+
+  //Update the current game state
+  state();
+
+  //Render the stage
+  renderer.render(stage);
+}
+
+function play() {
+
+  //Use the cat's velocity to make it move
+
+  //边界判断
+  var blobHitsWall = contain(cat, {x: 10, y: 200, width: 900, height: 800});
+
+    //If the blob hits the top or bottom of the stage, reverse
+    //its direction
+    
+
+  cat.x += cat.vx;
+  cat.y += cat.vy
+
+
+  //子弹判断
+  zidans.forEach(function(zidan,index){
+      zidan.y +=zidan.vy;    
+
+      if(zidan.y<5){
+          zidans.splice(index,1)
+          stage.removeChild(zidan)
+      };
+      for(let i=0;i<blobs.length;i++){
+          if(hitTestRectangle(zidan,blobs[i])){
+             zidans.splice(index,1)
+             blobs.splice(i+1,1)
+             stage.removeChild(zidan)
+             stage.removeChild(blobs[i])
+          }
+      }
+  })
+
+}
+
+//The `keyboard` helper function
+function keyboard(keyCode) {
+  var key = {};
+  key.code = keyCode;
+  key.isDown = false;
+  key.isUp = true;
+  key.press = undefined;
+  key.release = undefined;
+  //The `downHandler`
+  key.downHandler = function(event) {
+   
+    if (event.keyCode === key.code) {
+      if (key.isUp && key.press) key.press();
+      key.isDown = true;
+      key.isUp = false;
+    }
+    event.preventDefault();
+  };
+
+  //The `upHandler`
+  key.upHandler = function(event) {
+    if (event.keyCode === key.code) {
+      if (key.isDown && key.release) key.release();
+      key.isDown = false;
+      key.isUp = true;
+    }
+    event.preventDefault();
+  };
+
+  //Attach event listeners
+  window.addEventListener(
+    "keydown", key.downHandler.bind(key), false
+  );
+  window.addEventListener(
+    "keyup", key.upHandler.bind(key), false
+  );
+  return key;
+}
+
+
+
+function contain(sprite, container) {
+
+  var collision = undefined;
+
+  //Left
+  if (sprite.x < container.x) {
+    sprite.x = container.x;
+    collision = "left";
+  }
+
+  //Top
+  if (sprite.y < container.y) {
+    sprite.y = container.y;
+    collision = "top";
+  }
+
+  //Right
+  if (sprite.x + sprite.width > container.width) {
+    sprite.x = container.width - sprite.width;
+    collision = "right";
+  }
+
+  //Bottom
+  if (sprite.y + sprite.height > container.height) {
+    sprite.y = container.height - sprite.height;
+    collision = "bottom";
+  }
+
+  //Return the `collision` value
+  return collision;
+}
+
+function randomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+function hitTestRectangle(r1, r2) {
+
+  //Define the variables we'll need to calculate
+  var hit, combinedHalfWidths, combinedHalfHeights, vx, vy;
+
+  //hit will determine whether there's a collision
+  hit = false;
+
+  //Find the center points of each sprite
+  r1.centerX = r1.x + r1.width / 2; 
+  r1.centerY = r1.y + r1.height / 2; 
+  r2.centerX = r2.x + r2.width / 2; 
+  r2.centerY = r2.y + r2.height / 2; 
+
+  //Find the half-widths and half-heights of each sprite
+  r1.halfWidth = r1.width / 2;
+  r1.halfHeight = r1.height / 2;
+  r2.halfWidth = r2.width / 2;
+  r2.halfHeight = r2.height / 2;
+
+  //Calculate the distance vector between the sprites
+  vx = r1.centerX - r2.centerX;
+  vy = r1.centerY - r2.centerY;
+
+  //Figure out the combined half-widths and half-heights
+  combinedHalfWidths = r1.halfWidth + r2.halfWidth;
+  combinedHalfHeights = r1.halfHeight + r2.halfHeight;
+
+  //Check for a collision on the x axis
+  if (Math.abs(vx) < combinedHalfWidths) {
+
+    //A collision might be occuring. Check for a collision on the y axis
+    if (Math.abs(vy) < combinedHalfHeights) {
+
+      //There's definitely a collision happening
+      hit = true;
+    } else {
+
+      //There's no collision on the y axis
+      hit = false;
+    }
+  } else {
+
+    //There's no collision on the x axis
+    hit = false;
+  }
+
+  //`hit` will be either `true` or `false`
+  return hit;
+};
+</script>
+</body>
+
+
+
+

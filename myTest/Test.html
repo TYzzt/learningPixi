@@ -15,77 +15,90 @@ var Container = PIXI.Container,
 //Create a Pixi stage and renderer and add the 
 //renderer.view to the DOM
 var stage = new Container(),
-    renderer = autoDetectRenderer(256, 256);
+    renderer = autoDetectRenderer(900, 1000);
 document.body.appendChild(renderer.view);
 
 loader
+  /*.add("images/zidan.png")
+  .add("images/feiji.png")*/
+  .add("images/beijing.png")
   .add("images/cat.png")
   .load(setup);
 
 //Define any variables that are used in more than one function
-var cat, state;
+var zidan, state;
 
 function setup() {
 
-  //Create the `cat` sprite 
-  cat = new Sprite(resources["images/cat.png"].texture);
-  cat.y = 96; 
-  cat.vx = 0;
-  cat.vy = 0;
-  stage.addChild(cat);
+  //Create the `zidan` sprite 
+  beijing = new Sprite(resources["images/beijing.png"].texture);
+ /* stage.addChild(beijing);*/
+
+  zidan = new Sprite(resources["images/cat.png"].texture)
+  zidan.y = 900; 
+  zidan.x = 100; 
+
+  stage.addChild(zidan);
+  
 
   //Capture the keyboard arrow keys
   var left = keyboard(37),
       up = keyboard(38),
       right = keyboard(39),
-      down = keyboard(40);
+      down = keyboard(40),
+      kongge = keyboard(32);
+
+
+  kongge.press =function(){
+    
+  }
 
   //Left arrow key `press` method
   left.press = function() {
-    //Change the cat's velocity when the key is pressed
-    cat.vx = -5;
-    /*cat.vy = 0;*/
+    //Change the zidan's velocity when the key is pressed
+    zidan.vx = -5;
+    /*zidan.vy = 0;*/
   };
   //Left arrow key `release` method
   left.release = function() {
     //If the left arrow has been released, and the right arrow isn't down,
-    //and the cat isn't moving vertically:
-    //Stop the cat
+    //and the zidan isn't moving vertically:
+    //Stop the zidan
     if (!right.isDown ) {
-      cat.vx = 0;
+      zidan.vx = 0;
     }
   };
 
   //Up
   up.press = function() {
-    cat.vy = -5;
-    /*cat.vx = 0;*/
+    zidan.vy = -5;
+    /*zidan.vx = 0;*/
   };
   up.release = function() {
     if (!down.isDown ) {
-      cat.vy = 0;
+      zidan.vy = 0;
     }
   };
 
   //Right
   right.press = function() {
-    cat.vx = 5;
+    zidan.vx = 5;
     
   };
   right.release = function() {
     if (!left.isDown ) {
-      cat.vx = 0;
+      zidan.vx = 0;
     }
   };
 
   //Down
   down.press = function() {
-    cat.vy = 5;
+    zidan.vy = 5;
     
   };
   down.release = function() {
     if (!up.isDown ) {
-      cat.vy = 0;
+      zidan.vy = 0;
     }
   };
 
@@ -110,9 +123,9 @@ function gameLoop(){
 
 function play() {
 
-  //Use the cat's velocity to make it move
-  cat.x += cat.vx;
-  cat.y += cat.vy
+  //Use the zidan's velocity to make it move
+  zidan.x += zidan.vx;
+  zidan.y += zidan.vy
 }
 
 //The `keyboard` helper function
