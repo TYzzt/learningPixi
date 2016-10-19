@@ -29,6 +29,9 @@ loader
 var cat, state,beijing,zidan;
 var zidans=[];
 var blobs=[];
+var blob_show_time=1000;
+
+
 function setup() {
 
 
@@ -122,15 +125,45 @@ function setup() {
 
   //Set the game state
   state = play;
+  timerController()
+
  
-  showBlob()
   //Start the game loop
   gameLoop();
 }
 
+var timer;
+function time_setBlobNumber(){
+    timer = setInterval(function(){
+    
+      if(blobs.length<15){
+        let blob = new Sprite(resources["images/blob.png"].texture);
 
-function showBlob(){
-    let i = 3-blobs.length;
+       blob.x = randomInt(100,700);
+       blob.y = randomInt(100,200);
+
+       blobs.push(blob)
+       stage.addChild(blob);
+      }
+
+    
+
+  },  blob_show_time);
+   
+}
+
+function timerController(){
+  setInterval(function(){
+    clearInterval(timer);
+    time_setBlobNumber();
+  }, 2000);
+
+}
+
+ //显示数量
+/*function showBlob(){
+    
+    let i = blob_show_time-blobs.length;
     for(var j=0;j<i;j++){
       let blob = new Sprite(resources["images/blob.png"].texture);
 
@@ -141,8 +174,8 @@ function showBlob(){
       stage.addChild(blob);
 
     }
-    requestAnimationFrame(showBlob);
-}
+  
+}*/
 
 function gameLoop(){
 
@@ -165,11 +198,15 @@ function play() {
 
     //If the blob hits the top or bottom of the stage, reverse
     //its direction
-    
-
+  if(blob_show_time>300){
+    blob_show_time--;
+  }  
+  
   cat.x += cat.vx;
   cat.y += cat.vy
 
+  
+  
 
   //子弹判断
   zidans.forEach(function(zidan,index){
@@ -179,14 +216,17 @@ function play() {
           zidans.splice(index,1)
           stage.removeChild(zidan)
       };
-      for(let i=0;i<blobs.length;i++){
-          if(hitTestRectangle(zidan,blobs[i])){
+
+      blobs.forEach(function(blob,index2){
+        if(hitTestRectangle(zidan,blob)){
              zidans.splice(index,1)
-             blobs.splice(i+1,1)
+             blobs.splice(index2,1)
              stage.removeChild(zidan)
-             stage.removeChild(blobs[i])
+             stage.removeChild(blob)
           }
-      }
+      })
+
+      
   })
 
 }
