@@ -46,6 +46,11 @@ function setup() {
   cat.vy = 0;
   stage.addChild(cat);
 
+
+  beijing.touchstart = function(data){
+    console.log(data);
+  }
+
  /* zidan = new Sprite(resources["images/feiji.png"].texture);
   zidan.x = cat.x+cat.width/2; 
   zidan.y = 700 - zidan.height; 
